@@ -1,3 +1,6 @@
+> [!NOTE]
+> I'm using AI to help me write the code and troubleshoot errors. At the same time I was learning Packer and agentic IDE.
+
 ## Overview
 
 This repsitory contains Packer configuration to build VM templates for my homelab. Basically installing these tools:
