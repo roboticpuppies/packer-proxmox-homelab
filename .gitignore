@@ -1,0 +1,6 @@
+*.auto.pkrvars.hcl
+.DS_Store
+.idea/
+.vscode/
+packer_cache/
+output-*/
