@@ -23,6 +23,11 @@ variable "proxmox_node" {
   default = "phoenix"
 }
 
+variable "node_exporter_version" {
+  type    = string
+  default = "1.7.0"
+}
+
 
 packer {
   required_plugins {
@@ -46,7 +51,7 @@ source "proxmox-clone" "gp-ubuntu-server-24-04" {
   template_name        = "gp-ubuntu-server-24-04"
   template_description = "General Purpose Ubuntu Server 24.04 LTS. Use this server for general purposes. It's installed with Docker Engine, Oh My Zsh, and some useful tools."
   tags                 = "packer-managed;ubuntu;general-purpose"
-
+  # disks block removed; disk size must be set in the source VM/template
     // VM resources
   cores        = 2
   memory       = 2048
@@ -85,5 +90,8 @@ build {
   }
   provisioner "shell" {
     script = "scripts/provision.sh"
+    environment_vars = [
+      "NODE_EXPORTER_VERSION=${var.node_exporter_version}"
+    ]
   }
 }

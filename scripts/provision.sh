@@ -49,4 +49,38 @@ sed -i 's/^plugins=(.*)/plugins=(git docker docker-compose history)/' "$HOME/.zs
 echo "Changing default shell to zsh..."
 sudo chsh -s $(which zsh) $(whoami)
 
+# Install Node Exporter
+echo "Installing Node Exporter v${NODE_EXPORTER_VERSION}..."
+NODE_EXPORTER_FILENAME="node_exporter-${NODE_EXPORTER_VERSION}.linux-amd64"
+NODE_EXPORTER_TARBALL="${NODE_EXPORTER_FILENAME}.tar.gz"
+NODE_EXPORTER_DOWNLOAD_URL="https://github.com/prometheus/node_exporter/releases/download/v${NODE_EXPORTER_VERSION}/${NODE_EXPORTER_TARBALL}"
+
+wget "$NODE_EXPORTER_DOWNLOAD_URL" -O /tmp/"$NODE_EXPORTER_TARBALL"
+sudo tar -xvf /tmp/"$NODE_EXPORTER_TARBALL" -C /usr/local/bin --strip-components=1 "$NODE_EXPORTER_FILENAME"/node_exporter
+
+# Create node_exporter systemd service
+sudo bash -c 'cat << EOF > /etc/systemd/system/node_exporter.service
+[Unit]
+Description=Node Exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=node_exporter
+Group=node_exporter
+Type=simple
+ExecStart=/usr/local/bin/node_exporter
+
+[Install]
+WantedBy=multi-user.target
+EOF'
+
+# Create node_exporter user and group
+sudo useradd -rs /bin/false node_exporter || true
+
+# Reload systemd, enable and start node_exporter
+sudo systemctl daemon-reload
+sudo systemctl enable node_exporter
+sudo systemctl start node_exporter
+
 echo "Installation complete."
