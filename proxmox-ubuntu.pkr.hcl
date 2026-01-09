@@ -28,6 +28,17 @@ variable "node_exporter_version" {
   default = "1.7.0"
 }
 
+# Support multiple SSH public keys using `ssh_public_keys` (list of strings)
+# Example:
+# ssh_public_keys = [ file("/home/you/.ssh/id_rsa.pub"), "ssh-ed25519 AAAA... user@host" ]
+
+# New: support multiple SSH public keys. Use HCL list of strings, e.g.
+# ssh_public_keys = [ file("/home/you/.ssh/id_rsa.pub"), "ssh-ed25519 AAAA... user@host" ]
+variable "ssh_public_keys" {
+  type    = list(string)
+  default = []
+}
+
 
 packer {
   required_plugins {
@@ -73,7 +84,8 @@ source "proxmox-clone" "gp-ubuntu-server-24-04" {
     firewall = "false"
   }
 
-      // Network Configuration
+    // Network Configuration
+  nameserver = "1.1.1.1"
   ipconfig {
     ip      = "10.0.0.111/24"
     gateway = "10.0.0.1"
@@ -91,7 +103,9 @@ build {
   provisioner "shell" {
     script = "scripts/provision.sh"
     environment_vars = [
-      "NODE_EXPORTER_VERSION=${var.node_exporter_version}"
+      "NODE_EXPORTER_VERSION=${var.node_exporter_version}",
+      # Pass the HCL list as a JSON string for readability and robustness
+      "SSH_PUBKEYS_JSON=${jsonencode(var.ssh_public_keys)}"
     ]
   }
 }

@@ -12,7 +12,7 @@ This repsitory contains Packer configuration to build VM templates for my homela
 
 1. Make sure you already have API token and secret from Proxmox VE
 2. Copy `example.pkrvars.hcl` to `vars.auto.pkrvars.hcl`
-3. Fill the variables in `vars.auto.pkrvars.hcl`
+3. Fill the variables in `vars.auto.pkrvars.hcl` (set `ssh_public_keys`, e.g. `ssh_public_keys = [ file("/home/you/.ssh/id_rsa.pub") ]`). The build passes the list as a JSON array internally for readability and robustness.
 4. Run `packer build proxmox-ubuntu.pkr.hcl`
 5. The template will be available in the Proxmox VE
 

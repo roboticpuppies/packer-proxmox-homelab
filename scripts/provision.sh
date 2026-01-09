@@ -5,7 +5,8 @@ export DEBIAN_FRONTEND=noninteractive
 # Update repositories and install prerequisites
 echo "Installing prerequisites..."
 sudo apt-get update
-sudo apt-get install -y zsh git curl ca-certificates gnupg net-tools telnet wget rsync htop
+# Ensure python3 is available for parsing JSON arrays of SSH keys
+sudo apt-get install -y zsh git curl ca-certificates gnupg net-tools telnet wget rsync htop python3
 
 # Install Docker
 echo "Installing Docker..."
@@ -48,6 +49,42 @@ sed -i 's/^plugins=(.*)/plugins=(git docker docker-compose history)/' "$HOME/.zs
 # Change default shell to zsh for the current user
 echo "Changing default shell to zsh..."
 sudo chsh -s $(which zsh) $(whoami)
+
+# Install one SSH public key (idempotent)
+install_key() {
+    local key="$1"
+    [ -z "$key" ] && return
+    mkdir -p "$HOME/.ssh"
+    touch "$HOME/.ssh/authorized_keys"
+    # Only add the key if it's not already present
+    if ! grep -Fxq "$key" "$HOME/.ssh/authorized_keys"; then
+        echo "$key" >> "$HOME/.ssh/authorized_keys"
+    fi
+}
+
+# Support multiple keys via SSH_PUBKEYS_JSON (JSON array)
+if [ -n "$SSH_PUBKEYS_JSON" ]; then
+    echo "Adding provided SSH public keys from JSON array to authorized_keys..."
+    echo "$SSH_PUBKEYS_JSON" | python3 -c '
+import sys, json
+try:
+    keys = json.load(sys.stdin)
+except Exception:
+    keys = []
+for k in keys:
+    if k:
+        print(k)
+' | while IFS= read -r k; do
+        install_key "$k"
+    done
+fi
+
+# Ensure correct permissions and ownership if we created or modified keys
+if [ -d "$HOME/.ssh" ]; then
+    chmod 700 "$HOME/.ssh"
+    chmod 600 "$HOME/.ssh/authorized_keys"
+    chown -R $(whoami):$(whoami) "$HOME/.ssh"
+fi
 
 # Install Node Exporter
 echo "Installing Node Exporter v${NODE_EXPORTER_VERSION}..."
