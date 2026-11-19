@@ -4,7 +4,11 @@
       "Bash(ssh root@phoenix \"ls -lh /tmp/debian-13-trixie-genericcloud-amd64.qcow2\")",
       "Bash(ssh root@phoenix ' *)",
       "Bash(ssh root@phoenix \"qm importdisk 9001 /tmp/debian-13-trixie-genericcloud-amd64.qcow2 local-lvm\")",
-      "Bash(rtk git *)"
+      "Bash(rtk git *)",
+      "Bash(rtk ls *)",
+      "Bash(rtk read *)",
+      "Bash(packer fmt *)",
+      "Bash(packer validate *)"
     ]
   }
 }
